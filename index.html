@@ -123,12 +123,14 @@
         .main-content {
             display: flex;
             height: calc(100vh - 120px);
+            position: relative;
         }
 
         .pdf-container {
             flex: 1;
             background: #2a2a2a;
             position: relative;
+            overflow: hidden;
         }
 
         .pdf-container iframe {
@@ -139,8 +141,8 @@
 
         .fullscreen-btn {
             position: absolute;
-            bottom: 10px;
-            right: 10px;
+            bottom: 15px;
+            right: 395px;
             background: rgba(196, 30, 58, 0.85);
             color: white;
             border: none;
@@ -175,6 +177,7 @@
         }
 
         body.pdf-fullscreen .fullscreen-btn {
+            right: 15px;
             opacity: 0.9;
             padding: 10px 18px;
             font-size: 15px;
@@ -327,11 +330,11 @@
     <span id="currentMoment">--</span>
 </div>
 
-<div class="main-content">
+<div class="main-content" id="mainContent">
     <div class="pdf-container">
-        <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶ Fullscreen</button>
         <iframe id="pdfViewer" src="31_Macbeth_Act_V_Complete.pdf#page=2"></iframe>
     </div>
+    <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen (Esc to exit)">⛶ Fullscreen</button>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-title">🎭 Key Moments</div>
         <!-- Moments will be injected by JS -->
