@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macbeth Act V - Interactive Reading</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2d2d2d;
+            padding: 15px 20px;
+            border-bottom: 2px solid #c41e3a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #c41e3a;
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .audio-controls button {
+            background: #c41e3a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .audio-controls button:hover {
+            background: #a01830;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .speed-control select {
+            background: #3d3d3d;
+            color: #e0e0e0;
+            border: 1px solid #c41e3a;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        #progressBar {
+            width: 300px;
+            height: 6px;
+            background: #3d3d3d;
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        #progressFill {
+            height: 100%;
+            background: #c41e3a;
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        #timeDisplay {
+            font-size: 13px;
+            color: #aaa;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .tab-bar {
+            background: #252525;
+            display: flex;
+            border-bottom: 1px solid #444;
+        }
+
+        .tab {
+            padding: 12px 30px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 15px;
+        }
+
+        .tab:hover {
+            background: #333;
+        }
+
+        .tab.active {
+            border-bottom-color: #c41e3a;
+            color: #c41e3a;
+            background: #2d2d2d;
+        }
+
+        .main-content {
+            display: flex;
+            height: calc(100vh - 120px);
+        }
+
+        .pdf-container {
+            flex: 1;
+            background: #2a2a2a;
+            position: relative;
+        }
+
+        .pdf-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(196, 30, 58, 0.85);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 100;
+            transition: background 0.3s, opacity 0.3s;
+            opacity: 0.7;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(196, 30, 58, 1);
+            opacity: 1;
+        }
+
+        /* Fullscreen mode */
+        body.pdf-fullscreen .header,
+        body.pdf-fullscreen .tab-bar,
+        body.pdf-fullscreen .page-info-bar,
+        body.pdf-fullscreen .sidebar {
+            display: none;
+        }
+
+        body.pdf-fullscreen .main-content {
+            height: 100vh;
+        }
+
+        body.pdf-fullscreen .pdf-container {
+            width: 100%;
+        }
+
+        body.pdf-fullscreen .fullscreen-btn {
+            opacity: 0.9;
+            padding: 10px 18px;
+            font-size: 15px;
+        }
+
+        .sidebar {
+            width: 380px;
+            background: #222;
+            border-left: 2px solid #c41e3a;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #c41e3a;
+            border-radius: 4px;
+        }
+
+        .sidebar-title {
+            padding: 10px 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #c41e3a;
+            border-bottom: 1px solid #444;
+            margin-bottom: 5px;
+        }
+
+        .scene-divider {
+            background: linear-gradient(90deg, #c41e3a, #8b0000);
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 14px;
+            margin: 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .moment {
+            padding: 10px 15px;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 2px 0;
+        }
+
+        .moment:hover {
+            background: #2d2d2d;
+            border-left-color: #c41e3a;
+        }
+
+        .moment.active {
+            background: #2d1520;
+            border-left-color: #c41e3a;
+        }
+
+        .moment-time {
+            font-size: 11px;
+            color: #c41e3a;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .moment-page {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .moment-desc {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.4;
+        }
+
+        .page-info-bar {
+            background: #333;
+            padding: 6px 15px;
+            font-size: 12px;
+            color: #aaa;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: 200px;
+                border-left: none;
+                border-top: 2px solid #c41e3a;
+            }
+            .header {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .audio-controls {
+                order: 3;
+                width: 100%;
+            }
+            #progressBar {
+                width: 100%;
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="title">📖 Macbeth — Act V</div>
+    <div class="audio-controls">
+        <div class="speed-control">
+            <label for="speedSelect">Speed:</label>
+            <select id="speedSelect" onchange="changeSpeed(this.value)">
+                <option value="0.75">0.75x</option>
+                <option value="1" selected>1x</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+            </select>
+        </div>
+        <button onclick="skip(-10)">⏪ 10s</button>
+        <button onclick="togglePlay()" id="playBtn">▶ Play</button>
+        <button onclick="skip(10)">10s ⏩</button>
+        <div id="progressBar" onclick="seekAudio(event)">
+            <div id="progressFill"></div>
+        </div>
+        <span id="timeDisplay">0:00 / 0:00</span>
+    </div>
+</div>
+
+<div class="tab-bar">
+    <div class="tab active" id="tabOriginal" onclick="switchTab('original')">📘 Original Text</div>
+    <div class="tab" id="tabNoFear" onclick="switchTab('nofear')">📗 No Fear Shakespeare</div>
+</div>
+
+<div class="page-info-bar" id="pageInfoBar">
+    <span id="pageInfo">Page 335 | Act V, Scene i</span>
+    <span id="currentMoment">--</span>
+</div>
+
+<div class="main-content">
+    <div class="pdf-container">
+        <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶ Fullscreen</button>
+        <iframe id="pdfViewer" src="31_Macbeth_Act_V_Complete.pdf#page=2"></iframe>
+    </div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-title">🎭 Key Moments</div>
+        <!-- Moments will be injected by JS -->
+    </div>
+</div>
+
+<audio id="audioPlayer" preload="auto">
+    <source src="Macbeth_5.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const audio = document.getElementById('audioPlayer');
+const playBtn = document.getElementById('playBtn');
+const progressFill = document.getElementById('progressFill');
+const timeDisplay = document.getElementById('timeDisplay');
+const sidebar = document.getElementById('sidebar');
+const pdfViewer = document.getElementById('pdfViewer');
+const pageInfoBar = document.getElementById('pageInfoBar');
+const pageInfo = document.getElementById('pageInfo');
+const currentMomentEl = document.getElementById('currentMoment');
+
+let currentTab = 'original';
+let currentMomentIndex = -1;
+
+// PDF filenames
+const originalPDF = '31_Macbeth_Act_V_Complete.pdf';
+const noFearPDF = 'Macbeth_NoFear_Act_5.pdf';
+
+// Textbook printed pages: PDF page 1=334, page 2=335, page 3=336...
+// Page 1: Making Meaning intro (334)
+// Page 2: Act V title + Review and Anticipate + Scene i start (335)
+// Page 3: Scene i continued (336)
+// Page 4: Scene i end + Scene ii start (337)
+// Page 5: Scene ii end + Scene iii start (338)
+// Page 6: Scene iii continued (339)
+// Page 7: Scene iii end + Scene iv start (340)
+// Page 8: Scene iv end + Scene v start (341)
+// Page 9: Scene v continued + Scene vi start (342)
+// Page 10: Scene vi end + Scene vii start (343)
+// Page 11: Scene vii end + Scene viii start (344)
+// Page 12: Scene viii continued (345)
+// Page 13: Scene viii end (346)
+// Page 14: Comprehension Check (347)
+// Page 15-21: Analysis pages
+
+// NoFear PDF: 12 pages
+// Page 1: Act 5 Scene 1 (pages 61 in NoFear numbering)
+// Page 2: Scene 1 end + Scene 2 start (62)
+// Page 3: Scene 2 end + Scene 3 start (63)
+// Page 4: Scene 3 continued (64)
+// Page 5: Scene 3 end + Scene 4 start (65)
+// Page 6: Scene 4 end + Scene 5 start (66)
+// Page 7: Scene 5 cont + Scene 6 + Scene 7 start (67)
+// Page 8: Scene 7 cont (68)
+// Page 9: Scene 7 end + Scene 8 start (69)
+// Page 10: Scene 8 continued (70)
+// Page 11: Scene 8 continued (71)
+// Page 12: Scene 8 end (72)
+
+const moments = [
+    // === SCENE i: Dunsinane. In the castle. ===
+    { scene: "Scene i — Dunsinane. In the castle." },
+    {
+        time: 0, desc: "Review and Anticipate: Recap of Act IV",
+        origPage: 2, printedPage: 335, noFearPage: null,
+        lines: "", label: "Review & Anticipate"
+    },
+    {
+        time: 49.6, desc: "Doctor and Gentlewoman discuss Lady Macbeth's sleepwalking",
+        origPage: 2, printedPage: 335, noFearPage: 1, noFearPrinted: 61,
+        lines: "1–7", label: "Doctor & Gentlewoman"
+    },
+    {
+        time: 82, desc: "\"A great perturbation in nature\" — Doctor describes the unnatural sleepwalking",
+        origPage: 3, printedPage: 336, noFearPage: 1, noFearPrinted: 61,
+        lines: "8–16", label: "Perturbation in Nature"
+    },
+    {
+        time: 111, desc: "Lady Macbeth enters with a taper; Gentlewoman describes her nightly ritual",
+        origPage: 3, printedPage: 336, noFearPage: 1, noFearPrinted: 61,
+        lines: "17–28", label: "Lady Macbeth Enters"
+    },
+    {
+        time: 148, desc: "\"Yet here's a spot\" — Lady Macbeth sees imaginary blood",
+        origPage: 3, printedPage: 336, noFearPage: 1, noFearPrinted: 61,
+        lines: "29", label: "\"Yet here's a spot\""
+    },
+    {
+        time: 155, desc: "\"Out, damned spot!\" — Lady Macbeth's famous cry of guilt",
+        origPage: 3, printedPage: 336, noFearPage: 1, noFearPrinted: 61,
+        lines: "30–37", label: "⭐ \"Out, damned spot!\""
+    },
+    {
+        time: 180, desc: "\"The Thane of Fife had a wife\" — Lady Macbeth references Macduff's murdered family",
+        origPage: 3, printedPage: 336, noFearPage: 1, noFearPrinted: 61,
+        lines: "38–42", label: "Thane of Fife's Wife"
+    },
+    {
+        time: 197, desc: "\"All the perfumes of Arabia will not sweeten this little hand\"",
+        origPage: 3, printedPage: 336, noFearPage: 1, noFearPrinted: 61,
+        lines: "43–45", label: "⭐ Perfumes of Arabia"
+    },
+    {
+        time: 222, desc: "\"What's done cannot be undone\" — Lady Macbeth's tortured confession",
+        origPage: 4, printedPage: 337, noFearPage: 2, noFearPrinted: 62,
+        lines: "55–63", label: "\"What's done cannot be undone\""
+    },
+    {
+        time: 253, desc: "\"To bed, to bed, to bed!\" — Lady Macbeth exits",
+        origPage: 4, printedPage: 337, noFearPage: 2, noFearPrinted: 62,
+        lines: "60–63", label: "Lady Macbeth Exits"
+    },
+    {
+        time: 259, desc: "Doctor: \"Unnatural deeds do breed unnatural troubles\" — fears for Lady Macbeth",
+        origPage: 4, printedPage: 337, noFearPage: 2, noFearPrinted: 62,
+        lines: "66–75", label: "Doctor's Verdict"
+    },
+
+    // === SCENE ii: The country near Dunsinane. ===
+    { scene: "Scene ii — The country near Dunsinane." },
+    {
+        time: 295, desc: "Scottish lords discuss the approaching English army led by Malcolm",
+        origPage: 4, printedPage: 337, noFearPage: 2, noFearPrinted: 62,
+        lines: "1–6", label: "English Army Approaches"
+    },
+    {
+        time: 333, desc: "Reports that Macbeth is fortifying Dunsinane; some say he's mad",
+        origPage: 5, printedPage: 338, noFearPage: 3, noFearPrinted: 63,
+        lines: "13–16", label: "Macbeth Fortifies Castle"
+    },
+    {
+        time: 350, desc: "\"His title hang loose about him, like a giant's robe upon a dwarfish thief\"",
+        origPage: 5, printedPage: 338, noFearPage: 3, noFearPrinted: 63,
+        lines: "17–22", label: "⭐ Giant's Robe Metaphor"
+    },
+    {
+        time: 375, desc: "Lords march to meet Malcolm at Birnam Wood — the \"medicine\" for Scotland's sickness",
+        origPage: 5, printedPage: 338, noFearPage: 3, noFearPrinted: 63,
+        lines: "26–31", label: "March to Birnam"
+    },
+
+    // === SCENE iii: Dunsinane. In the castle. ===
+    { scene: "Scene iii — Dunsinane. In the castle." },
+    {
+        time: 393, desc: "Macbeth dismisses reports: \"Till Birnam Wood remove to Dunsinane, I cannot taint with fear\"",
+        origPage: 5, printedPage: 338, noFearPage: 3, noFearPrinted: 63,
+        lines: "1–9", label: "Macbeth's False Confidence"
+    },
+    {
+        time: 430, desc: "Macbeth berates the terrified servant: \"thou cream-faced loon\" — 10,000 soldiers approach",
+        origPage: 6, printedPage: 339, noFearPage: 4, noFearPrinted: 64,
+        lines: "11–19", label: "\"Cream-Faced Loon\""
+    },
+    {
+        time: 452, desc: "\"I have lived long enough\" — Macbeth reflects on his withered life",
+        origPage: 6, printedPage: 339, noFearPage: 4, noFearPrinted: 64,
+        lines: "19–28", label: "⭐ \"I Have Lived Long Enough\""
+    },
+    {
+        time: 496, desc: "\"I'll fight, till from my bones my flesh be hacked\" — Macbeth demands his armor",
+        origPage: 6, printedPage: 339, noFearPage: 4, noFearPrinted: 64,
+        lines: "32–36", label: "Macbeth Arms for Battle"
+    },
+    {
+        time: 515, desc: "\"Canst thou not minister to a mind diseased?\" — Macbeth asks the Doctor about Lady Macbeth",
+        origPage: 7, printedPage: 340, noFearPage: 5, noFearPrinted: 65,
+        lines: "39–45", label: "⭐ \"Minister to a Mind Diseased\""
+    },
+    {
+        time: 536, desc: "\"Throw physic to the dogs\" — Macbeth rejects medicine, asks Doctor to cure Scotland",
+        origPage: 7, printedPage: 340, noFearPage: 5, noFearPrinted: 65,
+        lines: "47–55", label: "\"Throw Physic to the Dogs\""
+    },
+    {
+        time: 571, desc: "\"I will not be afraid of death and bane / Till Birnam Forest come to Dunsinane\"",
+        origPage: 7, printedPage: 340, noFearPage: 5, noFearPrinted: 65,
+        lines: "58–62", label: "Birnam Forest Prophecy"
+    },
+
+    // === SCENE iv: Country near Birnam Wood. ===
+    { scene: "Scene iv — Country near Birnam Wood." },
+    {
+        time: 587, desc: "Malcolm orders soldiers to cut branches from Birnam Wood for camouflage",
+        origPage: 7, printedPage: 340, noFearPage: 6, noFearPrinted: 66,
+        lines: "4–7", label: "⭐ Cut Down Birnam Wood"
+    },
+    {
+        time: 620, desc: "Siward reports Macbeth stays in Dunsinane; Malcolm notes his soldiers desert him",
+        origPage: 8, printedPage: 341, noFearPage: 6, noFearPrinted: 66,
+        lines: "8–14", label: "Macbeth's Soldiers Desert"
+    },
+    {
+        time: 651, desc: "\"Strokes must arbitrate\" — The army advances toward Dunsinane",
+        origPage: 8, printedPage: 341, noFearPage: 6, noFearPrinted: 66,
+        lines: "16–21", label: "Army Advances"
+    },
+
+    // === SCENE v: Dunsinane. Within the castle. ===
+    { scene: "Scene v — Dunsinane. Within the castle." },
+    {
+        time: 665, desc: "\"Hang out our banners\" — Macbeth prepares for siege, confident in the castle's strength",
+        origPage: 8, printedPage: 341, noFearPage: 6, noFearPrinted: 66,
+        lines: "1–7", label: "Macbeth Prepares for Siege"
+    },
+    {
+        time: 693, desc: "\"I have almost forgot the taste of fears\" — Macbeth is numb to horror",
+        origPage: 8, printedPage: 341, noFearPage: 7, noFearPrinted: 67,
+        lines: "9–15", label: "Numb to Fear"
+    },
+    {
+        time: 714, desc: "\"The queen, my lord, is dead\" — Seyton delivers the devastating news",
+        origPage: 8, printedPage: 341, noFearPage: 7, noFearPrinted: 67,
+        lines: "16", label: "⭐ Lady Macbeth Dies"
+    },
+    {
+        time: 720, desc: "\"Tomorrow, and tomorrow, and tomorrow\" — Macbeth's great nihilistic soliloquy",
+        origPage: 9, printedPage: 342, noFearPage: 7, noFearPrinted: 67,
+        lines: "17–28", label: "⭐⭐ \"Tomorrow\" Soliloquy"
+    },
+    {
+        time: 751, desc: "Messenger reports: \"The wood began to move\" — Birnam Wood approaches",
+        origPage: 9, printedPage: 342, noFearPage: 7, noFearPrinted: 67,
+        lines: "29–35", label: "⭐ Birnam Wood Moves"
+    },
+    {
+        time: 780, desc: "Macbeth doubts the witches: \"I begin to doubt th' equivocation of the fiend\"",
+        origPage: 9, printedPage: 342, noFearPage: 8, noFearPrinted: 68,
+        lines: "39–46", label: "Equivocation of the Fiend"
+    },
+    {
+        time: 808, desc: "\"At least we'll die with harness on our back\" — Macbeth charges into battle",
+        origPage: 9, printedPage: 342, noFearPage: 8, noFearPrinted: 68,
+        lines: "49–52", label: "\"Die with Harness On\""
+    },
+
+    // === SCENE vi: Dunsinane. Before the castle. ===
+    { scene: "Scene vi — Dunsinane. Before the castle." },
+    {
+        time: 819, desc: "Malcolm orders troops to throw down branches and reveal themselves",
+        origPage: 9, printedPage: 342, noFearPage: 8, noFearPrinted: 68,
+        lines: "1–6", label: "Throw Down Branches"
+    },
+    {
+        time: 844, desc: "Macduff: \"Make all our trumpets speak\" — The battle begins",
+        origPage: 10, printedPage: 343, noFearPage: 8, noFearPrinted: 68,
+        lines: "9–10", label: "Battle Begins"
+    },
+
+    // === SCENE vii: Another part of the field. ===
+    { scene: "Scene vii — Another part of the field." },
+    {
+        time: 863, desc: "\"They have tied me to a stake\" — Macbeth fights like a bear at a bear-baiting",
+        origPage: 10, printedPage: 343, noFearPage: 8, noFearPrinted: 68,
+        lines: "1–4", label: "Bear-Baiting Metaphor"
+    },
+    {
+        time: 880, desc: "Macbeth fights and kills Young Siward: \"Thou wast born of woman\"",
+        origPage: 10, printedPage: 343, noFearPage: 9, noFearPrinted: 69,
+        lines: "5–14", label: "Young Siward Slain"
+    },
+    {
+        time: 920, desc: "Macduff searches for Macbeth: \"Tyrant, show thy face!\"",
+        origPage: 10, printedPage: 343, noFearPage: 9, noFearPrinted: 69,
+        lines: "15–22", label: "Macduff Seeks Macbeth"
+    },
+    {
+        time: 950, desc: "Siward reports the castle has surrendered; Malcolm's forces are winning",
+        origPage: 11, printedPage: 344, noFearPage: 9, noFearPrinted: 69,
+        lines: "24–30", label: "Castle Surrenders"
+    },
+
+    // === SCENE viii: Another part of the field. ===
+    { scene: "Scene viii — Another part of the field." },
+    {
+        time: 971, desc: "\"Why should I play the Roman fool?\" — Macbeth refuses suicide",
+        origPage: 11, printedPage: 344, noFearPage: 10, noFearPrinted: 70,
+        lines: "1–3", label: "No Roman Fool"
+    },
+    {
+        time: 982, desc: "\"Turn, hell-hound, turn!\" — Macduff confronts Macbeth",
+        origPage: 12, printedPage: 345, noFearPage: 10, noFearPrinted: 70,
+        lines: "4–7", label: "⭐ \"Turn, Hell-Hound!\""
+    },
+    {
+        time: 1000, desc: "\"I bear a charmèd life\" — Macbeth boasts no man of woman born can harm him",
+        origPage: 12, printedPage: 345, noFearPage: 10, noFearPrinted: 70,
+        lines: "8–13", label: "Charmed Life"
+    },
+    {
+        time: 1016, desc: "\"Macduff was from his mother's womb untimely ripped\" — The prophecy's true meaning revealed",
+        origPage: 12, printedPage: 345, noFearPage: 10, noFearPrinted: 70,
+        lines: "14–16", label: "⭐⭐ \"Untimely Ripped\""
+    },
+    {
+        time: 1030, desc: "\"Be these juggling fiends no more believed\" — Macbeth realizes the witches' deception",
+        origPage: 12, printedPage: 345, noFearPage: 10, noFearPrinted: 70,
+        lines: "17–22", label: "Witches' Deception Revealed"
+    },
+    {
+        time: 1051, desc: "\"I will not yield\" — Macbeth refuses to surrender to Malcolm",
+        origPage: 12, printedPage: 345, noFearPage: 11, noFearPrinted: 71,
+        lines: "27–31", label: "Macbeth Will Not Yield"
+    },
+    {
+        time: 1068, desc: "\"Lay on, Macduff!\" — Macbeth's final defiant battle cry",
+        origPage: 12, printedPage: 345, noFearPage: 11, noFearPrinted: 71,
+        lines: "32–34", label: "⭐⭐ \"Lay on, Macduff!\""
+    },
+    {
+        time: 1079, desc: "Macbeth is slain; Malcolm's forces are victorious",
+        origPage: 12, printedPage: 345, noFearPage: 11, noFearPrinted: 71,
+        lines: "Stage direction", label: "⭐ Macbeth Slain"
+    },
+    {
+        time: 1090, desc: "Malcolm wishes for his friends' safety; Siward says victory was cheaply bought",
+        origPage: 13, printedPage: 346, noFearPage: 11, noFearPrinted: 71,
+        lines: "35–37", label: "Victory Assessment"
+    },
+    {
+        time: 1102, desc: "Ross reports Young Siward's death; Siward accepts it with stoic honor",
+        origPage: 13, printedPage: 346, noFearPage: 11, noFearPrinted: 71,
+        lines: "39–52", label: "Young Siward Mourned"
+    },
+    {
+        time: 1154, desc: "Macduff enters with Macbeth's head: \"Hail, King!\" — Malcolm is crowned",
+        origPage: 13, printedPage: 346, noFearPage: 12, noFearPrinted: 72,
+        lines: "54–59", label: "⭐⭐ \"Hail, King of Scotland!\""
+    },
+    {
+        time: 1181, desc: "Malcolm's restoration speech: earls, exiled friends, new era for Scotland",
+        origPage: 13, printedPage: 346, noFearPage: 12, noFearPrinted: 72,
+        lines: "60–75", label: "⭐ Malcolm's Coronation Speech"
+    },
+    {
+        time: 1228, desc: "\"We invite to see us crowned at Scone\" — The play ends with order restored",
+        origPage: 13, printedPage: 346, noFearPage: 12, noFearPrinted: 72,
+        lines: "73–75", label: "Crowned at Scone — END"
+    }
+];
+
+// Build sidebar
+function buildSidebar() {
+    let html = '<div class="sidebar-title">🎭 Key Moments</div>';
+    moments.forEach((m, i) => {
+        if (m.scene) {
+            html += `<div class="scene-divider">🎬 ${m.scene}</div>`;
+        } else {
+            const timeStr = formatTime(m.time);
+            let pageStr = '';
+            if (currentTab === 'original') {
+                pageStr = `Page ${m.printedPage}` + (m.lines ? ` | Lines ${m.lines}` : '');
+            } else {
+                if (m.noFearPrinted) {
+                    pageStr = `No Fear: Page ${m.noFearPrinted} | Original: Page ${m.printedPage}` + (m.lines ? ` | Lines ${m.lines}` : '');
+                } else {
+                    pageStr = `Page ${m.printedPage}` + (m.lines ? ` | Lines ${m.lines}` : '');
+                }
+            }
+            html += `<div class="moment" id="moment-${i}" onclick="jumpToMoment(${i})">
+                <div class="moment-time">⏱ ${timeStr}</div>
+                <div class="moment-page">${pageStr}</div>
+                <div class="moment-desc">${m.desc}</div>
+            </div>`;
+        }
+    });
+    sidebar.innerHTML = html;
+}
+
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function jumpToMoment(index) {
+    const m = moments[index];
+    if (m.scene) return;
+    audio.currentTime = m.time;
+    updateActiveMoment(index);
+    navigatePDF(m);
+    if (audio.paused) togglePlay();
+}
+
+function navigatePDF(m) {
+    if (currentTab === 'original') {
+        pdfViewer.src = originalPDF + '#page=' + m.origPage;
+    } else {
+        if (m.noFearPage) {
+            pdfViewer.src = noFearPDF + '#page=' + m.noFearPage;
+        }
+    }
+}
+
+function updateActiveMoment(index) {
+    document.querySelectorAll('.moment').forEach(el => el.classList.remove('active'));
+    const el = document.getElementById('moment-' + index);
+    if (el) {
+        el.classList.add('active');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    currentMomentIndex = index;
+
+    // Update page info bar
+    const m = moments[index];
+    if (m && !m.scene) {
+        if (currentTab === 'original') {
+            pageInfo.textContent = `Page ${m.printedPage}` + (m.lines ? ` | Lines ${m.lines}` : '');
+        } else {
+            if (m.noFearPrinted) {
+                pageInfo.textContent = `No Fear: Page ${m.noFearPrinted} | Original: Page ${m.printedPage}` + (m.lines ? ` | Lines ${m.lines}` : '');
+            } else {
+                pageInfo.textContent = `Page ${m.printedPage}` + (m.lines ? ` | Lines ${m.lines}` : '');
+            }
+        }
+        currentMomentEl.textContent = m.label || '';
+    }
+}
+
+function togglePlay() {
+    if (audio.paused) {
+        audio.play();
+        playBtn.textContent = '⏸ Pause';
+    } else {
+        audio.pause();
+        playBtn.textContent = '▶ Play';
+    }
+}
+
+function skip(seconds) {
+    audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + seconds));
+}
+
+function changeSpeed(speed) {
+    audio.playbackRate = parseFloat(speed);
+}
+
+function seekAudio(event) {
+    const bar = document.getElementById('progressBar');
+    const rect = bar.getBoundingClientRect();
+    const pct = (event.clientX - rect.left) / rect.width;
+    audio.currentTime = pct * audio.duration;
+}
+
+audio.addEventListener('timeupdate', () => {
+    if (!audio.duration) return;
+    const pct = (audio.currentTime / audio.duration) * 100;
+    progressFill.style.width = pct + '%';
+    timeDisplay.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(audio.duration);
+
+    // Find active moment
+    let activeIndex = -1;
+    for (let i = moments.length - 1; i >= 0; i--) {
+        if (moments[i].scene) continue;
+        if (audio.currentTime >= moments[i].time) {
+            activeIndex = i;
+            break;
+        }
+    }
+    if (activeIndex !== currentMomentIndex && activeIndex >= 0) {
+        updateActiveMoment(activeIndex);
+        navigatePDF(moments[activeIndex]);
+    }
+});
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tabOriginal').classList.toggle('active', tab === 'original');
+    document.getElementById('tabNoFear').classList.toggle('active', tab === 'nofear');
+
+    // Navigate to current moment in new tab
+    if (currentMomentIndex >= 0 && !moments[currentMomentIndex].scene) {
+        navigatePDF(moments[currentMomentIndex]);
+    } else {
+        if (tab === 'original') {
+            pdfViewer.src = originalPDF + '#page=2';
+        } else {
+            pdfViewer.src = noFearPDF + '#page=1';
+        }
+    }
+    buildSidebar();
+    if (currentMomentIndex >= 0) {
+        setTimeout(() => updateActiveMoment(currentMomentIndex), 100);
+    }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && e.target.tagName !== 'SELECT') {
+        e.preventDefault();
+        togglePlay();
+    }
+    if (e.code === 'ArrowLeft') skip(-10);
+    if (e.code === 'ArrowRight') skip(10);
+    if (e.code === 'Escape' && document.body.classList.contains('pdf-fullscreen')) {
+        toggleFullscreen();
+    }
+});
+
+function toggleFullscreen() {
+    const btn = document.getElementById('fullscreenBtn');
+    document.body.classList.toggle('pdf-fullscreen');
+    if (document.body.classList.contains('pdf-fullscreen')) {
+        btn.textContent = '✕ Exit Fullscreen';
+    } else {
+        btn.textContent = '⛶ Fullscreen';
+    }
+}
+
+// Initialize
+buildSidebar();
+</script>
+
+</body>
+</html>
